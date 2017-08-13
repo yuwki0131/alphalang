@@ -1,0 +1,37 @@
+run
+build
+run
+run -123
+run abc
+run -123
+run 123
+repl
+console
+run
+run 123
+run
+run 123
+run 123 -feature
+re-run 123 -feature
+run 123 -feature
+run 123
+run 12a
+run (1)
+run (1 2)
+run (if (< x 10) 1 (f (- x 1))
+run (if (< x 10) 1 (f (- x 1)))
+run (if)
+run (if 2)
+run (if 2))
+run (1 2)
+run (1 2 3)
+run 1
+run (a)
+run (a 1)
+run (a)
+run (a 1)
+run (a 1))
+run "(a 1)"
+run "(if a 1)"
+run "(if a 1"
+run "(if a 1)"
