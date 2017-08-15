@@ -2,7 +2,7 @@ package example
 
 import scala.util.parsing.combinator._
 
-// TODO: Add Primitive functions (greater than, equals, 5 operators, and, or, not)
+// TODO: Add Primitive functions (5 operators, and, or, not)
 // TODO: Add if
 // TODO: Add env/update/let-in
 // TODO: Add Lambda/Closure
@@ -10,7 +10,7 @@ import scala.util.parsing.combinator._
 // TODO: 文字列の実装
 
 // AlphaLang Concrete Syntax Tree
-class ACST {}
+trait ACST {}
 
 case class Form(operator: ACST, operands: List[ACST]) extends ACST {
   override def toString(): String = {
@@ -40,7 +40,43 @@ case class Closure(symbols: List[Symbol], body: ACST, env:List[(Symbol, ACST)]) 
   }
 }
 
-case class PrimitivePlus() extends ACST {
+trait PrimitiveInt extends ACST {
+  def calcInts(operands:List[LiteralInt]):ACST
+}
+
+case class PrimitiveLessThan() extends PrimitiveInt {
+  override def toString(): String = "Primitive:<"
+
+  def repeatGt(result:Boolean, operands:List[Int]):Boolean = {
+    if ((! result) || (operands.tail.isEmpty)){
+      result
+    } else {
+      repeatGt(operands(0) < operands(1), operands.tail)
+    }
+  }
+
+  override def calcInts(operands:List[LiteralInt]):LiteralBoolean = {
+    LiteralBoolean(repeatGt(true, operands.map({case LiteralInt(value) => value})))
+  }
+}
+
+case class PrimitiveEquals() extends PrimitiveInt {
+  override def toString(): String = "Primitive:="
+
+  def repeatEq(result:Boolean, operands:List[Int]):Boolean = {
+    if ((! result) || (operands.tail.isEmpty)){
+      result
+    } else {
+      repeatEq(operands(0) == operands(1), operands.tail)
+    }
+  }
+
+  override def calcInts(operands:List[LiteralInt]):LiteralBoolean = {
+    LiteralBoolean(repeatEq(true, operands.map({case LiteralInt(value) => value})))
+  }
+}
+
+case class PrimitivePlus() extends PrimitiveInt {
   override def toString(): String = "Primitive:+"
 
   def plus(right: LiteralInt, left: LiteralInt):LiteralInt = (right, left) match {
@@ -48,7 +84,7 @@ case class PrimitivePlus() extends ACST {
     case _ => throw new RuntimeException
   }
 
-  def calc(operands:List[LiteralInt]):LiteralInt = operands.reduceLeft(plus)
+  override def calcInts(operands:List[LiteralInt]):LiteralInt = operands.reduceLeft(plus)
 }
 
 
@@ -76,7 +112,12 @@ class AlphaParser extends RegexParsers {
 
 object AlphaEval {
 
-  val initEnv = List((Symbol("+"), PrimitivePlus()))
+  /** binding primitive functions & variables here */
+  val initEnv = List(
+    (Symbol("+"), PrimitivePlus()),
+    (Symbol("<"), PrimitiveLessThan()),
+    (Symbol("="), PrimitiveEquals())
+  )
 
   /** find variable of environment */
   def find(symbol: Symbol, env:List[(Symbol, ACST)]): ACST = env match {
@@ -122,14 +163,14 @@ object AlphaEval {
       val args = operands.map(arg => evalSExp(arg, env))
       val f = evalSExp(operator, env)
       f match {
-        case plus: PrimitivePlus => plus.calc(args.asInstanceOf[List[LiteralInt]])
+        case primitiveInt: PrimitiveInt => primitiveInt.calcInts(args.asInstanceOf[List[LiteralInt]])
         case Closure(symbols, body, env) => evalSExp(body, update(symbols, args, env))
       }
     }
     case symbol:Symbol => find(symbol, env)
     case literal:LiteralInt => literal
     case literal:LiteralBoolean => literal
-    case primitive:PrimitivePlus => primitive
+    case primitive:PrimitiveInt => primitive
     case _ => {
       throw new RuntimeException
     }
