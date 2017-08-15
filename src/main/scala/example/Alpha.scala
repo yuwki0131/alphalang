@@ -2,6 +2,14 @@ package example
 
 import scala.util.parsing.combinator._
 
+// TODO: Add literal boolean
+// TODO: Add Primitive functions (greater than, equals, 5 operators, and, or, not)
+// TODO: Add if
+// TODO: Add env/update/let-in
+// TODO: Add Lambda/Closure
+// Goal of Turing complete
+// TODO: 文字列の実装
+
 // AlphaLang Concrete Syntax Tree
 class ACST {}
 
