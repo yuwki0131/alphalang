@@ -2,7 +2,6 @@ package example
 
 import scala.util.parsing.combinator._
 
-// TODO: Add Primitive functions (and, or)
 // TODO: Add if
 // TODO: Add env/update/let-in
 // TODO: Add Lambda/Closure
@@ -58,6 +57,22 @@ case class PrimitiveNot() extends PrimitiveBoolean {
       case LiteralBoolean(value) => LiteralBoolean(! value)
       case _ => throw new RuntimeException
     }
+  }
+}
+
+case class PrimitiveAnd() extends PrimitiveBoolean {
+  override def toString(): String = "Primitive:and"
+
+  override def calcBoolean(operands:List[LiteralBoolean]):LiteralBoolean = {
+    LiteralBoolean(operands.map({case LiteralBoolean(value) => value}).reduceLeft({(a, b) => a && b}))
+  }
+}
+
+case class PrimitiveOr() extends PrimitiveBoolean {
+  override def toString(): String = "Primitive:or"
+
+  override def calcBoolean(operands:List[LiteralBoolean]):LiteralBoolean = {
+    LiteralBoolean(operands.map({case LiteralBoolean(value) => value}).reduceLeft({(a, b) => a || b}))
   }
 }
 
@@ -166,7 +181,9 @@ object AlphaEval {
     (Symbol("%"), PrimitiveMod()),
     (Symbol("<"), PrimitiveLessThan()),
     (Symbol("="), PrimitiveEquals()),
-    (Symbol("not"), PrimitiveNot())
+    (Symbol("not"), PrimitiveNot()),
+    (Symbol("and"), PrimitiveAnd()),
+    (Symbol("or"), PrimitiveOr())
   )
 
   /** find variable of environment */
