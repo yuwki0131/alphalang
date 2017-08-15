@@ -84,7 +84,9 @@ case class PrimitivePlus() extends PrimitiveInt {
     case _ => throw new RuntimeException
   }
 
-  override def calcInts(operands:List[LiteralInt]):LiteralInt = operands.reduceLeft(plus)
+  override def calcInts(operands:List[LiteralInt]):LiteralInt = {
+    LiteralInt(operands.map({case LiteralInt(value) => value}).reduceLeft({(a, b) => a + b}))
+  }
 }
 
 
