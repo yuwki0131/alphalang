@@ -2,7 +2,7 @@ package example
 
 import scala.util.parsing.combinator._
 
-// TODO: Add Primitive functions (5 operators, and, or, not)
+// TODO: Add Primitive functions (and, or, not)
 // TODO: Add if
 // TODO: Add env/update/let-in
 // TODO: Add Lambda/Closure
@@ -79,16 +79,42 @@ case class PrimitiveEquals() extends PrimitiveInt {
 case class PrimitivePlus() extends PrimitiveInt {
   override def toString(): String = "Primitive:+"
 
-  def plus(right: LiteralInt, left: LiteralInt):LiteralInt = (right, left) match {
-    case (LiteralInt(a), LiteralInt(b)) => LiteralInt(a + b)
-    case _ => throw new RuntimeException
-  }
-
   override def calcInts(operands:List[LiteralInt]):LiteralInt = {
     LiteralInt(operands.map({case LiteralInt(value) => value}).reduceLeft({(a, b) => a + b}))
   }
 }
 
+case class PrimitiveMinus() extends PrimitiveInt {
+  override def toString(): String = "Primitive:-"
+
+  override def calcInts(operands:List[LiteralInt]):LiteralInt = {
+    LiteralInt(operands.map({case LiteralInt(value) => value}).reduceLeft({(a, b) => a - b}))
+  }
+}
+
+case class PrimitiveMult() extends PrimitiveInt {
+  override def toString(): String = "Primitive:*"
+
+  override def calcInts(operands:List[LiteralInt]):LiteralInt = {
+    LiteralInt(operands.map({case LiteralInt(value) => value}).reduceLeft({(a, b) => a * b}))
+  }
+}
+
+case class PrimitiveDiv() extends PrimitiveInt {
+  override def toString(): String = "Primitive:/"
+
+  override def calcInts(operands:List[LiteralInt]):LiteralInt = {
+    LiteralInt(operands.map({case LiteralInt(value) => value}).reduceLeft({(a, b) => a / b}))
+  }
+}
+
+case class PrimitiveMod() extends PrimitiveInt {
+  override def toString(): String = "Primitive:%"
+
+  override def calcInts(operands:List[LiteralInt]):LiteralInt = {
+    LiteralInt(operands.map({case LiteralInt(value) => value}).reduceLeft({(a, b) => a % b}))
+  }
+}
 
 /** Simple Parser of AlphaLang */
 class AlphaParser extends RegexParsers {
@@ -98,7 +124,7 @@ class AlphaParser extends RegexParsers {
   def literalBoolean: Parser[ACST]= """(true)|(false)""".r ^^ { lit => LiteralBoolean(lit.toBoolean) }
 
   def symbol: Parser[ACST]     = (
-    """[a-zA-Z\!\$\%\&\=\-\~\~\|\+\*\:\?\<\>][0-9a-zA-Z\!\$\%\&\=\-\~\~\|\+\*\:\?\<\>]*""".r
+    """[a-zA-Z\/\!\$\%\&\=\-\~\~\|\+\*\:\?\<\>][0-9a-zA-Z\!\$\%\&\=\-\~\~\|\+\*\:\?\<\>]*""".r
       ^^ { symbol => Symbol(symbol) }
   )
 
@@ -117,6 +143,10 @@ object AlphaEval {
   /** binding primitive functions & variables here */
   val initEnv = List(
     (Symbol("+"), PrimitivePlus()),
+    (Symbol("-"), PrimitiveMinus()),
+    (Symbol("*"), PrimitiveMult()),
+    (Symbol("/"), PrimitiveDiv()),
+    (Symbol("%"), PrimitiveMod()),
     (Symbol("<"), PrimitiveLessThan()),
     (Symbol("="), PrimitiveEquals())
   )
