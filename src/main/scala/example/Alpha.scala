@@ -2,7 +2,6 @@ package example
 
 import scala.util.parsing.combinator._
 
-// TODO: Add literal boolean
 // TODO: Add Primitive functions (greater than, equals, 5 operators, and, or, not)
 // TODO: Add if
 // TODO: Add env/update/let-in
@@ -23,7 +22,11 @@ case class Symbol(name: String) extends ACST {
   override def toString(): String = "symbol:" + name
 }
 
-case class Literal(value: Int) extends ACST {
+case class LiteralInt(value: Int) extends ACST {
+  override def toString(): String = "literal:" + value.toString
+}
+
+case class LiteralBoolean(value: Boolean) extends ACST {
   override def toString(): String = "literal:" + value.toString
 }
 
@@ -40,19 +43,21 @@ case class Closure(symbols: List[Symbol], body: ACST, env:List[(Symbol, ACST)]) 
 case class PrimitivePlus() extends ACST {
   override def toString(): String = "Primitive:+"
 
-  def plus(right: Literal, left: Literal):Literal = (right, left) match {
-    case (Literal(a), Literal(b)) => Literal(a + b)
+  def plus(right: LiteralInt, left: LiteralInt):LiteralInt = (right, left) match {
+    case (LiteralInt(a), LiteralInt(b)) => LiteralInt(a + b)
     case _ => throw new RuntimeException
   }
 
-  def calc(operands:List[Literal]):Literal = operands.reduceLeft(plus)
+  def calc(operands:List[LiteralInt]):LiteralInt = operands.reduceLeft(plus)
 }
 
 
 /** Simple Parser of AlphaLang */
 class AlphaParser extends RegexParsers {
 
-  def literal: Parser[ACST]    = """\-?[0-9]+""".r ^^ { lit => Literal(lit.toInt) }
+  def literalInt: Parser[ACST]    = """\-?[0-9]+""".r ^^ { lit => LiteralInt(lit.toInt) }
+
+  def literalBoolean: Parser[ACST]= """(true)|(false)""".r ^^ { lit => LiteralBoolean(lit.toBoolean) }
 
   def symbol: Parser[ACST]     = (
     """[a-zA-Z\!\$\%\&\=\-\~\~\|\+\*\:\?\<\>][0-9a-zA-Z\!\$\%\&\=\-\~\~\|\+\*\:\?\<\>]*""".r
@@ -64,7 +69,7 @@ class AlphaParser extends RegexParsers {
       ^^ { case operator ~ operands => Form(operator, operands) }
   )
 
-  def expression: Parser[ACST] = literal | symbol | form
+  def expression: Parser[ACST] = literalInt | literalBoolean | symbol | form
 
   def sourcecode: Parser[List[ACST]] = (expression *) <~ """$""".r
 }
@@ -102,7 +107,7 @@ object AlphaEval {
   /** evaluate s-expression */
   def evalSExp(expression: ACST, env:List[(Symbol, ACST)]):ACST = expression match {
     case Form(Symbol("if"), List(condtion, thenClause, elseClause)) => { // if expression
-      if (evalSExp(condtion, env).equals(Literal(1))) (evalSExp(thenClause, env))
+      if (evalSExp(condtion, env).equals(LiteralInt(1))) (evalSExp(thenClause, env))
       else (evalSExp(elseClause, env))
     }
     case Form(Symbol("lambda"), List(symbols:Form, body)) => { // generate closure (function def)
@@ -117,12 +122,13 @@ object AlphaEval {
       val args = operands.map(arg => evalSExp(arg, env))
       val f = evalSExp(operator, env)
       f match {
-        case plus: PrimitivePlus => plus.calc(args.asInstanceOf[List[Literal]])
+        case plus: PrimitivePlus => plus.calc(args.asInstanceOf[List[LiteralInt]])
         case Closure(symbols, body, env) => evalSExp(body, update(symbols, args, env))
       }
     }
     case symbol:Symbol => find(symbol, env)
-    case literal:Literal => literal
+    case literal:LiteralInt => literal
+    case literal:LiteralBoolean => literal
     case primitive:PrimitivePlus => primitive
     case _ => {
       throw new RuntimeException
