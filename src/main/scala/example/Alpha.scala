@@ -2,7 +2,7 @@ package example
 
 import scala.util.parsing.combinator._
 
-// TODO: Add Primitive functions (and, or, not)
+// TODO: Add Primitive functions (and, or)
 // TODO: Add if
 // TODO: Add env/update/let-in
 // TODO: Add Lambda/Closure
@@ -11,6 +11,8 @@ import scala.util.parsing.combinator._
 
 // AlphaLang Concrete Syntax Tree
 trait ACST {}
+
+trait Primitive extends ACST {}
 
 case class Form(operator: ACST, operands: List[ACST]) extends ACST {
   override def toString(): String = {
@@ -22,11 +24,11 @@ case class Symbol(name: String) extends ACST {
   override def toString(): String = "symbol:" + name
 }
 
-case class LiteralInt(value: Int) extends ACST {
+case class LiteralInt(value: Int) extends Primitive {
   override def toString(): String = "literal:" + value.toString
 }
 
-case class LiteralBoolean(value: Boolean) extends ACST {
+case class LiteralBoolean(value: Boolean) extends Primitive {
   override def toString(): String = "literal:" + value.toString
 }
 
@@ -40,8 +42,23 @@ case class Closure(symbols: List[Symbol], body: ACST, env:List[(Symbol, ACST)]) 
   }
 }
 
-trait PrimitiveInt extends ACST {
+trait PrimitiveInt extends Primitive {
   def calcInts(operands:List[LiteralInt]):ACST
+}
+
+trait PrimitiveBoolean extends Primitive {
+  def calcBoolean(operands:List[LiteralBoolean]):LiteralBoolean
+}
+
+case class PrimitiveNot() extends PrimitiveBoolean {
+  override def toString(): String = "Primitive:not"
+
+  override def calcBoolean(operands:List[LiteralBoolean]):LiteralBoolean = {
+    operands.head match {
+      case LiteralBoolean(value) => LiteralBoolean(! value)
+      case _ => throw new RuntimeException
+    }
+  }
 }
 
 case class PrimitiveLessThan() extends PrimitiveInt {
@@ -148,7 +165,8 @@ object AlphaEval {
     (Symbol("/"), PrimitiveDiv()),
     (Symbol("%"), PrimitiveMod()),
     (Symbol("<"), PrimitiveLessThan()),
-    (Symbol("="), PrimitiveEquals())
+    (Symbol("="), PrimitiveEquals()),
+    (Symbol("not"), PrimitiveNot())
   )
 
   /** find variable of environment */
@@ -196,13 +214,12 @@ object AlphaEval {
       val f = evalSExp(operator, env)
       f match {
         case primitiveInt: PrimitiveInt => primitiveInt.calcInts(args.asInstanceOf[List[LiteralInt]])
+        case primitiveBoolean: PrimitiveBoolean => primitiveBoolean.calcBoolean(args.asInstanceOf[List[LiteralBoolean]])
         case Closure(symbols, body, env) => evalSExp(body, update(symbols, args, env))
       }
     }
     case symbol:Symbol => find(symbol, env)
-    case literal:LiteralInt => literal
-    case literal:LiteralBoolean => literal
-    case primitive:PrimitiveInt => primitive
+    case primitive:Primitive => primitive
     case _ => {
       throw new RuntimeException
     }
