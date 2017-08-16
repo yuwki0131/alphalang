@@ -2,8 +2,6 @@ package example
 
 import scala.util.parsing.combinator._
 
-// TODO: Add if
-// TODO: Add env/update/let-in
 // TODO: Add Lambda/Closure
 // Goal of Turing complete
 // TODO: Add retrec
@@ -42,9 +40,23 @@ case class IfForm(condition: ACST, thenClause: ACST, elseClause: ACST) extends S
   }
 }
 
-// case class Literal(value: Bool) extends ACST {
-//   override def toString(): String = "literal:" + value.toString
-// }
+case class LetForm(binding:List[BindingForm], body: ACST) extends SpecialForm {
+  override def toString(): String = {
+    s"let ${binding} in ${body}"
+  }
+}
+
+case class BindingForm(symbol: Symbol, body: ACST) extends SpecialForm {
+  override def toString(): String = {
+    s"bind ${symbol} = ${body}, "
+  }
+}
+
+case class LambdaForm(symbols:List[Symbol], body: ACST) extends SpecialForm {
+  override def toString(): String = {
+    s"(lambda ( ${symbols} ) ${body})"
+  }
+}
 
 case class Closure(symbols: List[Symbol], body: ACST, env:List[(Symbol, ACST)]) extends ACST {
   override def toString(): String = {
@@ -166,7 +178,7 @@ class AlphaParser extends RegexParsers {
 
   def literalBoolean: Parser[ACST]= """(true)|(false)""".r ^^ { lit => LiteralBoolean(lit.toBoolean) }
 
-  def symbol: Parser[ACST]     = (
+  def symbol: Parser[Symbol]      = (
     """[a-zA-Z\/\!\$\%\&\=\-\~\~\|\+\*\:\?\<\>][0-9a-zA-Z\!\$\%\&\=\-\~\~\|\+\*\:\?\<\>]*""".r
       ^^ { symbol => Symbol(symbol) }
   )
@@ -181,7 +193,22 @@ class AlphaParser extends RegexParsers {
       ^^ { case cond ~ thenClause ~ elseClause => IfForm(cond, thenClause, elseClause) }
   )
 
-  def forms:      Parser[ACST] = ifForm | form
+  def bindingForm: Parser[BindingForm] = (
+    (("(" ~> (symbol ~ expression)) <~ ")" )
+      ^^ { case symbol ~ body => BindingForm(symbol, body) }
+  )
+
+  def letForm: Parser[ACST] = (
+    (("(" ~> ("let" ~> ((("(" ~> rep(bindingForm)) <~ ")") ~ expression))) <~ ")" )
+      ^^ { case binds ~ body => LetForm(binds, body) }
+  )
+
+  def lambdaForm: Parser[ACST] = (
+    (("(" ~> ("lambda" ~> ((("(" ~> rep(symbol)) <~ ")") ~ expression))) <~ ")" )
+      ^^ { case symbols ~ body => LambdaForm(symbols, body) }
+  )
+
+  def forms:      Parser[ACST] =  ifForm | letForm | lambdaForm | form
 
   def expression: Parser[ACST] = literalInt | literalBoolean | symbol | forms
 
@@ -212,22 +239,17 @@ object AlphaEval {
   }
 
   /** binding variable */
-  def update(binds: List[ACST], env:List[(Symbol, ACST)]):List[(Symbol, ACST)] = {
-    if (binds.isEmpty){
+  def update(bindings:List[BindingForm], env:List[(Symbol, ACST)]):List[(Symbol, ACST)] =  {
+    if (bindings.isEmpty){
       env
     } else {
-      binds match {
-        case Form(symbol @ Symbol(_), body: List[ACST])::(rest :List[ACST]) => {
-          update(rest, (symbol, evalSExp(body.head, env))::env)
+      bindings.head match {
+        case BindingForm(symbol, body) => {
+          update(bindings.tail, (symbol, evalSExp(body, env))::env)
         }
         case _ => throw new RuntimeException
       }
     }
-  }
-
-  // TODO
-  def update(symbols: List[Symbol], values: List[ACST], env:List[(Symbol, ACST)]):List[(Symbol, ACST)] = {
-    List()
   }
 
   /** evaluate s-expression */
@@ -236,13 +258,11 @@ object AlphaEval {
       if (evalSExp(condtion, env).asInstanceOf[LiteralBoolean].value) (evalSExp(thenClause, env))
       else (evalSExp(elseClause, env))
     }
-    case Form(Symbol("lambda"), List(symbols:Form, body)) => { // generate closure (function def)
-      val symbolsList = ((symbols.operator.asInstanceOf[Symbol])::symbols.operands.asInstanceOf[List[Symbol]]): List[Symbol]
-      Closure(symbolsList, body, env)
+    case LetForm(binding, body) => {
+      evalSExp(body, update(binding, env))
     }
-    case Form(Symbol("let"), List(binds:Form, body)) => { // binding variable
-      val letBinds = (binds.operator::binds.operands): List[ACST]
-      evalSExp(body, update(letBinds, env))
+    case LambdaForm(symbols, body) => {
+      Closure(symbols, body, env)
     }
     case Form(operator, operands) => { // apply function
       val args = operands.map(arg => evalSExp(arg, env))
@@ -250,7 +270,8 @@ object AlphaEval {
       f match {
         case primitiveInt: PrimitiveInt => primitiveInt.calcInts(args.asInstanceOf[List[LiteralInt]])
         case primitiveBoolean: PrimitiveBoolean => primitiveBoolean.calcBoolean(args.asInstanceOf[List[LiteralBoolean]])
-        case Closure(symbols, body, env) => evalSExp(body, update(symbols, args, env))
+        case Closure(symbols, body, env) => evalSExp(body, (symbols zip args) ++ env)
+        case _ => throw new RuntimeException
       }
     }
     case symbol:Symbol => find(symbol, env)
