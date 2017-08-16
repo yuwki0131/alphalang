@@ -1,11 +1,11 @@
-[info] Running example.AlphaLang (+ 1 2)
+[info] Running example.AlphaLang (if true 1 2)
 [debug] Waiting for threads to exit or System.exit to be called.
-[debug] Waiting for thread run-main-8 to terminate.
 [debug]   Classpath:
 [debug] 	/home/yuwki0131/Dropbox/langs/functional/scala/projects/alphalang/target/scala-2.12/classes
 [debug] 	/home/yuwki0131/.ivy2/cache/org.scala-lang/scala-library/jars/scala-library-2.12.1.jar
 [debug] 	/home/yuwki0131/.ivy2/cache/org.scala-lang.modules/scala-parser-combinators_2.12/bundles/scala-parser-combinators_2.12-1.0.6.jar
-[debug] 	Thread run-main-8 exited.
+[debug] Waiting for thread run-main-0 to terminate.
+[debug] 	Thread run-main-0 exited.
 [debug] Interrupting remaining threads (should be all daemons).
 [debug] Sandboxed run complete..
 [debug] Exited with code 0

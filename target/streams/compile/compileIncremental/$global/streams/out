@@ -2,14 +2,34 @@
 [debug] [naha] Initial source changes: 
 [debug] [naha] 	removed:Set()
 [debug] [naha] 	added: Set()
-[debug] [naha] 	modified: Set()
+[debug] [naha] 	modified: Set(/home/yuwki0131/Dropbox/langs/functional/scala/projects/alphalang/src/main/scala/example/Alpha.scala)
 [debug] [naha] Invalidated products: Set()
 [debug] [naha] External API changes: API Changes: Set()
 [debug] [naha] Modified binary dependencies: Set()
-[debug] [naha] Initial directly invalidated sources: Set()
+[debug] [naha] Initial directly invalidated sources: Set(/home/yuwki0131/Dropbox/langs/functional/scala/projects/alphalang/src/main/scala/example/Alpha.scala)
 [debug] [naha] 
 [debug] [naha] Sources indirectly invalidated by:
 [debug] [naha] 	product: Set()
 [debug] [naha] 	binary dep: Set()
 [debug] [naha] 	external source: Set()
-[debug] All initially invalidated sources: Set()
+[debug] All initially invalidated sources: Set(/home/yuwki0131/Dropbox/langs/functional/scala/projects/alphalang/src/main/scala/example/Alpha.scala)
+[debug] [naha] Initial set of included nodes: Set(/home/yuwki0131/Dropbox/langs/functional/scala/projects/alphalang/src/main/scala/example/Alpha.scala)
+[debug] [naha] Recompiling all 1 sources: invalidated sources (1) exceeded 50.0% of all sources
+[info] Compiling 1 Scala source to /home/yuwki0131/Dropbox/langs/functional/scala/projects/alphalang/target/scala-2.12/classes...
+[debug] Getting org.scala-sbt:compiler-interface:0.13.13:component from component compiler for Scala 2.12.1
+[debug] Getting org.scala-sbt:compiler-interface:0.13.13:component from component compiler for Scala 2.12.1
+[debug] Running cached compiler 708f294e, interfacing (CompilerInterface) with Scala compiler version 2.12.1
+[debug] Calling Scala compiler with arguments  (CompilerInterface):
+[debug] 	-bootclasspath
+[debug] 	/usr/lib/jvm/java-8-oracle/jre/lib/resources.jar:/usr/lib/jvm/java-8-oracle/jre/lib/rt.jar:/usr/lib/jvm/java-8-oracle/jre/lib/sunrsasign.jar:/usr/lib/jvm/java-8-oracle/jre/lib/jsse.jar:/usr/lib/jvm/java-8-oracle/jre/lib/jce.jar:/usr/lib/jvm/java-8-oracle/jre/lib/charsets.jar:/usr/lib/jvm/java-8-oracle/jre/lib/jfr.jar:/usr/lib/jvm/java-8-oracle/jre/classes:/home/yuwki0131/.ivy2/cache/org.scala-lang/scala-library/jars/scala-library-2.12.1.jar
+[debug] 	-classpath
+[debug] 	/home/yuwki0131/Dropbox/langs/functional/scala/projects/alphalang/target/scala-2.12/classes:/home/yuwki0131/.ivy2/cache/org.scala-lang.modules/scala-parser-combinators_2.12/bundles/scala-parser-combinators_2.12-1.0.6.jar
+[warn] there were two feature warnings; re-run with -feature for details
+[warn] one warning found
+[debug] Scala compilation took 10.572041405 s
+[debug] [naha] New invalidations:
+[debug] [naha] 	Set()
+[debug] [naha] Initial set of included nodes: Set()
+[debug] [naha] Previously invalidated, but (transitively) depend on new invalidations:
+[debug] [naha] 	Set()
+[debug] [naha] All newly invalidated sources after taking into account (previously) recompiled sources:Set()

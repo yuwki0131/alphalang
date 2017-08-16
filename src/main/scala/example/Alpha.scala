@@ -6,18 +6,15 @@ import scala.util.parsing.combinator._
 // TODO: Add env/update/let-in
 // TODO: Add Lambda/Closure
 // Goal of Turing complete
+// TODO: Add retrec
+// TODO: Add define
+// TODO: Add List
 // TODO: 文字列の実装
 
 // AlphaLang Concrete Syntax Tree
 trait ACST {}
 
 trait Primitive extends ACST {}
-
-case class Form(operator: ACST, operands: List[ACST]) extends ACST {
-  override def toString(): String = {
-    "Form(" + operator.toString + operands.map(op => " " + op.toString).toString + ")"
-  }
-}
 
 case class Symbol(name: String) extends ACST {
   override def toString(): String = "symbol:" + name
@@ -29,6 +26,20 @@ case class LiteralInt(value: Int) extends Primitive {
 
 case class LiteralBoolean(value: Boolean) extends Primitive {
   override def toString(): String = "literal:" + value.toString
+}
+
+case class Form(operator: ACST, operands: List[ACST]) extends ACST {
+  override def toString(): String = {
+    "Form(" + operator.toString + operands.map(op => " " + op.toString).toString + ")"
+  }
+}
+
+trait SpecialForm extends ACST {}
+
+case class IfForm(condition: ACST, thenClause: ACST, elseClause: ACST) extends SpecialForm {
+  override def toString(): String = {
+    s"if ${condition} then ${thenClause} else ${elseClause}"
+  }
 }
 
 // case class Literal(value: Bool) extends ACST {
@@ -165,7 +176,14 @@ class AlphaParser extends RegexParsers {
       ^^ { case operator ~ operands => Form(operator, operands) }
   )
 
-  def expression: Parser[ACST] = literalInt | literalBoolean | symbol | form
+  def ifForm: Parser[ACST] = (
+    (("(" ~> ("if" ~> (expression ~ expression ~ expression))) <~ ")" )
+      ^^ { case cond ~ thenClause ~ elseClause => IfForm(cond, thenClause, elseClause) }
+  )
+
+  def forms:      Parser[ACST] = ifForm | form
+
+  def expression: Parser[ACST] = literalInt | literalBoolean | symbol | forms
 
   def sourcecode: Parser[List[ACST]] = (expression *) <~ """$""".r
 }
@@ -214,8 +232,8 @@ object AlphaEval {
 
   /** evaluate s-expression */
   def evalSExp(expression: ACST, env:List[(Symbol, ACST)]):ACST = expression match {
-    case Form(Symbol("if"), List(condtion, thenClause, elseClause)) => { // if expression
-      if (evalSExp(condtion, env).equals(LiteralInt(1))) (evalSExp(thenClause, env))
+    case IfForm(condtion, thenClause, elseClause) => { // if expression
+      if (evalSExp(condtion, env).asInstanceOf[LiteralBoolean].value) (evalSExp(thenClause, env))
       else (evalSExp(elseClause, env))
     }
     case Form(Symbol("lambda"), List(symbols:Form, body)) => { // generate closure (function def)
@@ -259,3 +277,4 @@ object AlphaLang extends AlphaParser {
 }
 
 // sbt run "(+ 1 2)"
+// run "(if true 1 2)"
