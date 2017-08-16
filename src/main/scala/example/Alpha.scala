@@ -2,12 +2,10 @@ package example
 
 import scala.util.parsing.combinator._
 
-// TODO: Add Lambda/Closure
-// Goal of Turing complete
 // TODO: Add retrec
 // TODO: Add define
 // TODO: Add List
-// TODO: 文字列の実装
+// TODO: Add String
 
 // AlphaLang Concrete Syntax Tree
 trait ACST {}
@@ -215,6 +213,7 @@ class AlphaParser extends RegexParsers {
   def sourcecode: Parser[List[ACST]] = (expression *) <~ """$""".r
 }
 
+/** Simple Eval of AlphaLang */
 object AlphaEval {
 
   /** binding primitive functions & variables here */
@@ -282,6 +281,7 @@ object AlphaEval {
   }
 }
 
+/** AlphaLang */
 object AlphaLang extends AlphaParser {
 
   def main(args: Array[String]) = {
@@ -296,6 +296,3 @@ object AlphaLang extends AlphaParser {
      }
   }
 }
-
-// sbt run "(+ 1 2)"
-// run "(if true 1 2)"
