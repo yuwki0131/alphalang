@@ -2,7 +2,8 @@
 
 yet yet another lisp-like programming language
 
-execution example
+### execution example
+
 ```
 $ cd alphalang
 $ sbt
@@ -13,15 +14,15 @@ parsed tree:Form(Form((lambda ( List(symbol:f) ) Form((lambda ( List(symbol:p) )
 literal:55
 ```
 
-# sample program
+## Sample Programs
 
-## plus
+### plus
 
 ```
 (+ 1 2)
 ```
 
-## Fibonacci number
+### Fibonacci number
 
 ```
 (((lambda (f) ((lambda (p) (f (lambda (a) ((p p) a)))) (lambda (p) (f (lambda (a) ((p p) a)))))) (lambda (fib) (lambda (n) (if (= n 0) 0 (if (= n 1) 1 (+ (fib (- n 1)) (fib (- n 2)))))))) 10)
