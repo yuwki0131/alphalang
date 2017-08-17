@@ -2,11 +2,6 @@ package example
 
 import scala.util.parsing.combinator._
 
-// TODO: Add retrec
-// TODO: Add define
-// TODO: Add List
-// TODO: Add String
-
 // AlphaLang Concrete Syntax Tree
 trait ACST {}
 

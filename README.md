@@ -27,3 +27,14 @@ literal:55
 ```
 (((lambda (f) ((lambda (p) (f (lambda (a) ((p p) a)))) (lambda (p) (f (lambda (a) ((p p) a)))))) (lambda (fib) (lambda (n) (if (= n 0) 0 (if (= n 1) 1 (+ (fib (- n 1)) (fib (- n 2)))))))) 10)
 ```
+
+## milestone
+
+TODO: Add retrec
+TODO: Add define
+TODO: Add List
+TODO: Add Map
+TODO: Add Set
+TODO: Add String
+TODO: Add Testcode
+TODO: Add do
