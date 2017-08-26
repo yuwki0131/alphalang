@@ -31,10 +31,17 @@ literal:55
 ## milestone
 
 TODO: Add retrec
+
 TODO: Add define
+
 TODO: Add List
+
 TODO: Add Map
+
 TODO: Add Set
+
 TODO: Add String
+
 TODO: Add Testcode
+
 TODO: Add do
